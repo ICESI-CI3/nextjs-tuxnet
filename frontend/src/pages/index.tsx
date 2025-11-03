@@ -1,10 +1,29 @@
-export default function HomePage() {
+import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import { hasRole } from "@/utils/roles";
+
+export const Sidebar = () => {
+  const { user } = useAuthStore();
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold text-pink-600">Bienvenido a BellezaTotal 💅</h1>
-      <p className="text-gray-600 mt-2">
-        Inicia sesión para gestionar tus servicios, citas y productos.
-      </p>
-    </div>
+    <aside className="bg-pink-100 h-full p-4 w-64">
+      <h2 className="text-lg font-bold mb-4 text-pink-600">
+        BellezaTotal
+      </h2>
+
+      <nav className="flex flex-col gap-2">
+        {hasRole(user?.roles || [], ["admin", "staff"]) && (
+          <Link href="/dashboard/appointments">Citas</Link>
+        )}
+
+        {hasRole(user?.roles || [], ["admin"]) && (
+          <Link href="/dashboard/users">Usuarios</Link>
+        )}
+
+        {hasRole(user?.roles || [], ["client"]) && (
+          <Link href="/client/profile">Mi Perfil</Link>
+        )}
+      </nav>
+    </aside>
   );
-}
+};
