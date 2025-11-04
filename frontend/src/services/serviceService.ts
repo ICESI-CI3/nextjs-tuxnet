@@ -1,3 +1,5 @@
+import { Service } from "@/types/service";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://nestjs-tuxnet-lrey4b2j6-santiagosantacruz57s-projects.vercel.app";
 
 export const serviceService = {
