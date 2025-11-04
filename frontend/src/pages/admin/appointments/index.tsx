@@ -8,13 +8,14 @@ import {
   appointmentService,
   UpdateAppointmentPayload,
 } from "@/services/appointmentService";
-import { useAuthStore } from "@/store/useAuthStore";
 import type { Appointment, AppointmentStatus } from "@/types/appointment";
 
 const navLinks = [
-  { href: "/specialist", label: "Agenda" },
-  { href: "/specialist/appointment", label: "Citas" },
-  { href: "/specialist/profile", label: "Perfil" },
+  { href: "/admin", label: "Tablero" },
+  { href: "/admin/appointments", label: "Citas" },
+  { href: "/admin/services", label: "Servicios" },
+  { href: "/admin/users", label: "Usuarios" },
+  { href: "/admin/profile", label: "Perfil" },
 ];
 
 const filters: { value: AppointmentStatus | "all"; label: string }[] = [
@@ -25,52 +26,44 @@ const filters: { value: AppointmentStatus | "all"; label: string }[] = [
   { value: "cancelled", label: "Canceladas" },
 ];
 
-export default function SpecialistAppointmentsPage() {
-  const user = useAuthStore((state) => state.user);
+export default function AdminAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<(typeof filters)[number]["value"]>("all");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [filter, setFilter] = useState<(typeof filters)[number]["value"]>("all");
   const [feedback, setFeedback] = useState<
     { type: "success" | "error"; text: string } | null
   >(null);
 
+  const loadAppointments = async () => {
+    setIsLoading(true);
+    setFeedback(null);
+    try {
+      const data = await appointmentService.getAll();
+      setAppointments(data);
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Error al cargar las citas",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const data = await appointmentService.getAll();
-        setAppointments(data);
-        setFeedback(null);
-      } catch (error) {
-        setFeedback({
-          type: "error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "No pudimos cargar las citas asignadas.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    void fetchAppointments();
+    void loadAppointments();
   }, []);
 
-  const specialistAppointments = useMemo(() => {
-    if (!user?.id) return [];
-    return appointments.filter(
-      (appointment) => appointment.specialistId === user.id,
-    );
-  }, [appointments, user]);
-
   const filteredAppointments = useMemo(() => {
-    if (filter === "all") return specialistAppointments;
-    return specialistAppointments.filter(
-      (appointment) => appointment.status === filter,
-    );
-  }, [specialistAppointments, filter]);
+    if (filter === "all") return appointments;
+    return appointments.filter((appointment) => appointment.status === filter);
+  }, [appointments, filter]);
 
-  const updateAppointment = async (
+  const updateStatus = async (
     appointment: Appointment,
     payload: UpdateAppointmentPayload,
   ) => {
@@ -83,7 +76,7 @@ export default function SpecialistAppointmentsPage() {
       );
       setFeedback({
         type: "success",
-        text: "La cita se actualizo correctamente.",
+        text: "Cita actualizada correctamente.",
       });
     } catch (error) {
       setFeedback({
@@ -91,7 +84,7 @@ export default function SpecialistAppointmentsPage() {
         text:
           error instanceof Error
             ? error.message
-            : "No pudimos actualizar la cita.",
+            : "No pudimos actualizar la cita",
       });
     } finally {
       setIsUpdating(null);
@@ -102,42 +95,40 @@ export default function SpecialistAppointmentsPage() {
     <>
       <div className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm shadow-primary/10">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-          Buenas practicas
+          Politicas de agenda
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text/70">
-          <li>Confirma con tus clientes 12 horas antes de la cita.</li>
-          <li>Registra notas despues de cada servicio.</li>
-          <li>Comunica ausencias o cancelaciones con rapidez.</li>
+          <li>Confirma las citas pendientes al menos 24 horas antes.</li>
+          <li>
+            Marca como completadas apenas el especialista cierre el servicio.
+          </li>
+          <li>Registra cancelaciones para liberar la agenda a tiempo.</li>
         </ul>
       </div>
-
       <div className="rounded-2xl border border-neutral/10 bg-white p-5 shadow-sm">
-        <h3 className="text-sm font-semibold text-primary">Recursos</h3>
+        <h3 className="text-sm font-semibold text-primary">Reportes rapidos</h3>
         <p className="mt-2 text-sm text-text/65">
-          Descarga plantillas de recomendaciones para tus clientes y guias de
-          cuidado despues del servicio.
+          Proximamente podras exportar reportes de ocupacion y productividad
+          semanal directamente desde este panel.
         </p>
-        <button className="mt-4 w-full rounded-full border border-primary/30 px-4 py-2 text-xs font-medium text-primary transition hover:bg-primary hover:text-white">
-          Descargar guia
-        </button>
       </div>
     </>
   );
 
   return (
     <DashboardLayout
-      title="Citas asignadas"
-      description="Consulta, filtra y actualiza el estado de tus citas programadas."
+      title="Administracion de citas"
+      description="Supervisa y actualiza el estado de las reservas de BellezaTotal."
       navLinks={navLinks}
-      sidebar={sidebar}
       actions={
         <Link
-          href="/specialist"
+          href="/admin/services"
           className="rounded-full border border-primary/30 px-5 py-3 text-sm font-medium text-primary transition hover:bg-primary hover:text-white"
         >
-          Volver a agenda
+          Gestionar servicios
         </Link>
       }
+      sidebar={sidebar}
     >
       {feedback && (
         <div
@@ -173,7 +164,7 @@ export default function SpecialistAppointmentsPage() {
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => (
               <div
-                key={`specialist-appointments-skeleton-${index}`}
+                key={`admin-appointments-skeleton-${index}`}
                 className="h-36 animate-pulse rounded-2xl border border-neutral/10 bg-white/60"
               />
             ))
@@ -184,24 +175,30 @@ export default function SpecialistAppointmentsPage() {
                 appointment={appointment}
                 actions={
                   <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/admin/appointments/${appointment.id}`}
+                      className="rounded-full border border-primary/30 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary transition hover:bg-primary hover:text-white"
+                    >
+                      Ver detalle
+                    </Link>
                     {appointment.status !== "completed" && (
                       <button
                         onClick={() =>
-                          updateAppointment(appointment, { status: "completed" })
+                          updateStatus(appointment, { status: "completed" })
                         }
                         disabled={isUpdating === appointment.id}
-                        className="rounded-full border border-primary/30 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-full border border-emerald-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-emerald-600 transition hover:bg-emerald-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        Marcar atendida
+                        Marcar completada
                       </button>
                     )}
                     {appointment.status !== "cancelled" && (
                       <button
                         onClick={() =>
-                          updateAppointment(appointment, { status: "cancelled" })
+                          updateStatus(appointment, { status: "cancelled" })
                         }
                         disabled={isUpdating === appointment.id}
-                        className="rounded-full border border-red-200 px-3 py-1 text-xs font-medium text-red-500 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-full border border-red-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-red-500 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Cancelar
                       </button>
@@ -212,9 +209,10 @@ export default function SpecialistAppointmentsPage() {
             ))
           : (
             <div className="rounded-2xl border border-dashed border-primary/30 bg-white p-6 text-center text-text/60">
-              No tienes citas en esta categoria. Mantente disponible para nuevas reservas.
+              No hay citas en este estado actualmente. Ajusta los filtros o
+              verifica la disponibilidad de servicios.
             </div>
-          )}
+            )}
       </section>
     </DashboardLayout>
   );

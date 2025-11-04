@@ -1,31 +1,33 @@
+import { getApiBaseUrl } from "@/services/apiConfig";
+
 export const authService = {
   login: async (email: string, password: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+    const res = await fetch(`${getApiBaseUrl()}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
     if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Error al iniciar sesión");
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error al iniciar sesion");
     }
 
-    return await res.json(); // Debería devolver { token }
+    return res.json();
   },
 
   register: async (firstname: string, email: string, password: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+    const res = await fetch(`${getApiBaseUrl()}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ firstname, email, password }),
     });
 
     if (!res.ok) {
-      const error = await res.json();
+      const error = await res.json().catch(() => ({}));
       throw new Error(error.message || "Error al registrar usuario");
     }
 
-    return await res.json(); // Debería devolver el usuario creado o token
+    return res.json();
   },
 };

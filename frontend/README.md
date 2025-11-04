@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BellezaTotal Frontend
 
-## Getting Started
+Aplicación Next.js para el taller de Computación en Internet III. Integra autenticación por roles, gestión de servicios/citas y consumo del backend NestJS.
 
-First, run the development server:
+## Requisitos previos
+- Node.js >= 20.19.0 (recomendado 20.x LTS)
+- npm 10+
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Variables de entorno
+Crea `frontend/.env.local` con al menos:
+
+```
+NEXT_PUBLIC_API_URL=https://nestjs-tuxnet-lrey4b2j6-santiagosantacruz57s-projects.vercel.app
+NEXT_PUBLIC_USE_MOCKS=true
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`NEXT_PUBLIC_USE_MOCKS` activa los mocks locales (MSW) para trabajar sin backend.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts principales
+```bash
+npm install      # instala dependencias
+npm run dev      # inicia el servidor de desarrollo
+npm run build    # compila la app para producción
+npm run start    # sirve la build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Mock Service Worker (MSW)
+Durante desarrollo se levanta automáticamente y responde a:
+- `POST /auth/login` / `POST /auth/register`
+- `GET|POST /services`
+- `GET|POST /appointments`
+- `GET /users`
 
-## Learn More
+Desactiva los mocks poniendo `NEXT_PUBLIC_USE_MOCKS=false` cuando el backend real esté listo.
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura destacada
+- `src/components/` – Formularios, layout y navegación.
+- `src/services/` – Capa de acceso a API.
+- `src/store/useAuthStore.ts` – Estado global de autenticación con Zustand.
+- `src/mocks/` – Handlers y datos de MSW.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Próximos pasos
+1. Completar páginas y servicios faltantes para cada rol.
+2. Añadir pruebas unitarias (Vitest) y E2E (Playwright).
+3. Configurar pipeline de CI/CD y despliegue en Vercel.
