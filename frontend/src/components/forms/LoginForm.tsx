@@ -12,7 +12,7 @@ export const LoginForm = () => {
     try {
       const data = await authService.login(email, password);
       login(data.token);
-      alert("Inicio de sesión exitoso");
+      alert("Inicio de sesión exitoso ✨");
     } catch (error: any) {
       alert(error.message || "Error al iniciar sesión");
     }
@@ -21,14 +21,14 @@ export const LoginForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 bg-white p-6 rounded shadow-md w-72"
+      className="bg-white border border-neutral rounded-lg shadow-md p-6 w-72 flex flex-col gap-3"
     >
       <input
         type="email"
         placeholder="Correo electrónico"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:border-primary focus:ring-1 focus:ring-primary"
         required
       />
       <input
@@ -36,12 +36,12 @@ export const LoginForm = () => {
         placeholder="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:border-primary focus:ring-1 focus:ring-primary"
         required
       />
       <button
         type="submit"
-        className="bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition"
+        className="bg-primary text-white py-2 rounded hover:bg-accent transition"
       >
         Iniciar sesión
       </button>

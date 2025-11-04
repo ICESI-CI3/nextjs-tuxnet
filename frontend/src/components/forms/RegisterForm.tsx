@@ -10,7 +10,7 @@ export const RegisterForm = () => {
     e.preventDefault();
     try {
       await authService.register(firstname, email, password);
-      alert("Usuario registrado correctamente");
+      alert("Registro exitoso 🎉");
     } catch (error: any) {
       alert(error.message || "Error al registrar usuario");
     }
@@ -19,14 +19,14 @@ export const RegisterForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 bg-white p-6 rounded shadow-md w-72"
+      className="bg-white border border-neutral rounded-lg shadow-md p-6 w-72 flex flex-col gap-3"
     >
       <input
         type="text"
-        placeholder="Nombre"
+        placeholder="Nombre completo"
         value={firstname}
         onChange={(e) => setFirstname(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:border-primary focus:ring-1 focus:ring-primary"
         required
       />
       <input
@@ -34,7 +34,7 @@ export const RegisterForm = () => {
         placeholder="Correo electrónico"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:border-primary focus:ring-1 focus:ring-primary"
         required
       />
       <input
@@ -42,12 +42,12 @@ export const RegisterForm = () => {
         placeholder="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:border-primary focus:ring-1 focus:ring-primary"
         required
       />
       <button
         type="submit"
-        className="bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition"
+        className="bg-primary text-white py-2 rounded hover:bg-accent transition"
       >
         Registrarse
       </button>
