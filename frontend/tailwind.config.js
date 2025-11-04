@@ -8,11 +8,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#3B82F6',   // Azul brillante
-        secondary: '#F472B6', // Rosa suave
-        background: '#F9FAFB', // Fondo claro
-        text: '#1F2937',      // Gris oscuro (texto principal)
-        success: '#10B981',   // Verde menta
+        // 🎨 Paleta BellezaTotal
+        primary: '#E85D75',     // Rosa principal (botones, acentos)
+        secondary: '#FCE4EC',   // Rosa claro (fondos suaves)
+        background: '#FFF8F9',  // Fondo general cálido
+        text: '#333333',        // Texto principal
+        accent: '#D6A75D',      // Dorado suave (detalles premium)
+        neutral: '#F5F5F5',     // Fondo secundario o tarjetas
+        success: '#6EE7B7',     // Verde menta (mensajes positivos)
+        error: '#EF4444',       // Rojo coral (errores)
+      },
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // Fuente moderna y limpia
       },
     },
   },
