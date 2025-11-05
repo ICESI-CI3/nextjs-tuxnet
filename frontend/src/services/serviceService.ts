@@ -39,8 +39,6 @@ export const serviceService = {
   },
 
   async create(payload: ServicePayload): Promise<Service> {
-     console.log("Sending request payload:", payload);
-     
     const res = await fetch(`${getApiBaseUrl()}/services`, {
       method: "POST",
       headers: {

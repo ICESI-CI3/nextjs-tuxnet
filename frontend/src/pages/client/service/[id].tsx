@@ -32,7 +32,6 @@ export default function ClientServiceDetailPage() {
       try {
         const data = await serviceService.getById(id);
         setService(data);
-        console.log(data);
       } catch (err) {
         setError(
           err instanceof Error
