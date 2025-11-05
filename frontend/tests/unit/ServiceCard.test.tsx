@@ -18,6 +18,6 @@ describe("ServiceCard", () => {
     render(<ServiceCard service={mockService} />);
     expect(screen.getByText("Corte de cabello")).toBeInTheDocument();
     expect(screen.getByText(/30 min/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$50000/)).toBeInTheDocument();
+    expect(screen.getByText(/\$ ?50\.000/)).toBeInTheDocument();
   });
 });

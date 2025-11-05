@@ -6,6 +6,6 @@ describe("RegisterForm", () => {
     render(<RegisterForm />);
     expect(screen.getByPlaceholderText(/nombre/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/correo/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/contraseña/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/mínimo 8 caracteres/i)).toBeInTheDocument();
   });
 });
