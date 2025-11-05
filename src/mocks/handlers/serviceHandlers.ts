@@ -36,34 +36,34 @@ export const serviceHandlers = [
 
   ...SERVICES_ENDPOINTS.map((url) =>
     http.post(url, async ({ request }) => {
-      const body = await request.json<{
+      const body = (await request.json()) as {
         name?: string;
         category?: string;
         durationMin?: number;
         price?: number;
-      status?: string;
-    }>();
+        status?: string;
+      };
 
-    if (!body.name || !body.durationMin || !body.price) {
-      return HttpResponse.json(
-        { message: "Nombre, duracion y precio son obligatorios" },
-        { status: 400 },
-      );
-    }
+      if (!body.name || !body.durationMin || !body.price) {
+        return HttpResponse.json(
+          { message: "Nombre, duracion y precio son obligatorios" },
+          { status: 400 },
+        );
+      }
 
-    const newService = {
-      id: `srv-${mockServices.length + 1}`,
-      name: body.name,
-      category: body.category ?? "General",
-      durationMin: body.durationMin,
-      price: body.price,
-      status: body.status ?? "active",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      const newService = {
+        id: `srv-${mockServices.length + 1}`,
+        name: body.name,
+        category: body.category ?? "General",
+        durationMin: body.durationMin,
+        price: body.price,
+        status: body.status ?? "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    mockServices.push(newService);
-    return HttpResponse.json(newService, { status: 201 });
+      mockServices.push(newService);
+      return HttpResponse.json(newService, { status: 201 });
     }),
   ),
 
@@ -74,25 +74,25 @@ export const serviceHandlers = [
 
       if (index === -1) {
         return HttpResponse.json({ message: "Servicio no encontrado" }, { status: 404 });
-    }
+      }
 
-    const body = await request.json<{
-      name?: string;
-      category?: string;
-      durationMin?: number;
-      price?: number;
-      status?: string;
-    }>();
+      const body = (await request.json()) as {
+        name?: string;
+        category?: string;
+        durationMin?: number;
+        price?: number;
+        status?: string;
+      };
 
-    const current = mockServices[index];
-    const updated = {
-      ...current,
-      ...body,
-      updatedAt: new Date().toISOString(),
-    };
+      const current = mockServices[index];
+      const updated = {
+        ...current,
+        ...body,
+        updatedAt: new Date().toISOString(),
+      };
 
-    mockServices[index] = updated;
-    return HttpResponse.json(updated);
+      mockServices[index] = updated;
+      return HttpResponse.json(updated);
     }),
   ),
 

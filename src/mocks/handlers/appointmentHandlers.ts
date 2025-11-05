@@ -62,11 +62,11 @@ export const appointmentHandlers = [
 
   ...APPOINTMENTS_ENDPOINTS.map((url) =>
     http.post(url, async ({ request }) => {
-      const body = await request.json<{
-        serviceId?: string;
-        scheduledAt?: string;
-        notes?: string;
-      }>();
+      const body = (await request.json()) as {
+      serviceId?: string;
+      scheduledAt?: string;
+      notes?: string;
+    };
 
     if (!body.serviceId || !body.scheduledAt) {
       return HttpResponse.json(
@@ -106,7 +106,7 @@ export const appointmentHandlers = [
       );
     }
 
-    const body = await request.json<Partial<MockAppointment>>();
+    const body = (await request.json()) as Partial<MockAppointment>;
     const current = mockAppointments[index];
 
     const updated: MockAppointment = {

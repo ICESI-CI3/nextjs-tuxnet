@@ -17,10 +17,10 @@ const resolveUserByEmail = (email: string) =>
   mockUsers.find((user) => user.email.toLowerCase() === email.toLowerCase());
 
 const loginHandler = async ({ request }: { request: Request }) => {
-    const body = await request.json<{
-      email?: string;
-      password?: string;
-    }>();
+    const body = (await request.json()) as {
+    email?: string;
+    password?: string;
+  };
 
     if (!body.email || !body.password) {
       return HttpResponse.json(
@@ -53,11 +53,11 @@ const loginHandler = async ({ request }: { request: Request }) => {
   };
 
 const registerHandler = async ({ request }: { request: Request }) => {
-    const body = await request.json<{
-      firstname?: string;
-      email?: string;
-      password?: string;
-    }>();
+    const body = (await request.json()) as {
+    firstname?: string;
+    email?: string;
+    password?: string;
+  };
 
     if (!body.firstname || !body.email || !body.password) {
       return HttpResponse.json(

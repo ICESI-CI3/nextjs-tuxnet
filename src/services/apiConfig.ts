@@ -14,10 +14,15 @@ export const getApiBaseUrl = () => {
   return API_URL.replace(/\/$/, "");
 };
 
-export const getAuthHeaders = () => {
-  if (typeof window === "undefined") {
-    return {};
+export function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) headers["Authorization"] = `Bearer ${token}`;
   }
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+
+  return headers;
+}

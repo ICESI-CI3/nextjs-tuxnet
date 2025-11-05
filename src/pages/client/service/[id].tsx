@@ -114,6 +114,7 @@ export default function ClientServiceDetailPage() {
             <div className="mt-5">
               <BookingForm
                 serviceId={service.id}
+                startAt=""
                 serviceName={service.name}
                 onSuccess={() => router.push("/client/appointment")}
               />

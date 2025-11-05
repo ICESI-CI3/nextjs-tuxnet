@@ -3,18 +3,13 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { appointmentService } from "@/services/appointmentService";
-import { serviceService } from "@/services/serviceService"; // Service fetch
+import { serviceService, ServiceUser } from "@/services/serviceService"; // Service fetch
 
 export interface BookingFormProps {
   serviceId: string;
+  startAt: string;
   serviceName: string;
   onSuccess?: () => void;
-}
-
-interface ServiceUser {
-  id: string;
-  firstname: string;
-  email: string;
 }
 
 export const BookingForm = ({

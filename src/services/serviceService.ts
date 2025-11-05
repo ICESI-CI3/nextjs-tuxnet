@@ -1,12 +1,19 @@
 import type { Service } from "@/types/service";
 import { getApiBaseUrl, getAuthHeaders } from "@/services/apiConfig";
 
+export interface ServiceUser {
+  id: string;
+  firstname: string;
+  email: string;
+}
+
 export interface ServicePayload {
   name: string;
   category?: string;
   durationMin: number;
   price: number;
   status?: string;
+  users?: ServiceUser[];
 }
 
 export const serviceService = {

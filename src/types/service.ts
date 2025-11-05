@@ -1,3 +1,5 @@
+import { ServiceUser} from "../services/serviceService"
+
 export interface Service {
   id: string;
   name: string;
@@ -8,4 +10,6 @@ export interface Service {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
+  users?: ServiceUser[];
+
 }
