@@ -5,7 +5,7 @@ import { loginAs } from '../utils/helpers';
 test.describe('Ver servicios (cliente / admin / especialista)', () => {
   test('Cliente: puede ver la lista de servicios en /client', async ({ page }) => {
     // Si tu app requiere login para /client, descomenta la línea siguiente
-    // await loginAs(page, 'cliente@test.com', '12345');
+    await loginAs(page, 'cliente@test.com', '12345');
 
     await page.goto('/client');
     await expect(page.locator('text=Servicios, Servicios Disponibles, Nuestros Servicios')).toBeVisible({ timeout: 5000 }).catch(()=>{ /* fallback */ });
