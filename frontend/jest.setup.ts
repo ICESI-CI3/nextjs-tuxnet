@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Ensure frontend code sees a safe test API setup
+process.env.NEXT_PUBLIC_USE_MOCKS = 'true';
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost';
+
 jest.mock('next/router', () => ({
   useRouter() {
     return {

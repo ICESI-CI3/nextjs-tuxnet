@@ -106,16 +106,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (!combinedUser) {
       persistSession(null, null);
+      // Clear cookies to keep middleware in sync
+      if (typeof document !== "undefined") {
+        document.cookie = `token=; Max-Age=0; path=/`;
+        document.cookie = `roles=; Max-Age=0; path=/`;
+      }
       set({ user: null, token: null, isReady: true });
       return;
     }
 
     persistSession(token, combinedUser);
+    // Mirror auth state into cookies so middleware can read it
+    if (typeof document !== "undefined") {
+      const sevenDays = 60 * 60 * 24 * 7;
+      const roles = Array.isArray(combinedUser.roles)
+        ? combinedUser.roles.map((r) => String(r))
+        : [];
+      document.cookie = `token=${encodeURIComponent(token)}; Max-Age=${sevenDays}; Path=/`;
+      document.cookie = `roles=${encodeURIComponent(JSON.stringify(roles))}; Max-Age=${sevenDays}; Path=/`;
+    }
     set({ token, user: combinedUser, isReady: true });
   },
 
   logout: () => {
     persistSession(null, null);
+    // Remove cookies read by middleware
+    if (typeof document !== "undefined") {
+      document.cookie = `token=; Max-Age=0; path=/`;
+      document.cookie = `roles=; Max-Age=0; path=/`;
+    }
     set({ user: null, token: null, isReady: true });
   },
 
@@ -136,11 +155,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (!combinedUser) {
       persistSession(null, null);
+      if (typeof document !== "undefined") {
+        document.cookie = `token=; Max-Age=0; path=/`;
+        document.cookie = `roles=; Max-Age=0; path=/`;
+      }
       set({ user: null, token: null, isReady: true });
       return;
     }
 
     persistSession(storedToken, combinedUser);
+    // Ensure cookies exist if we have a valid session in storage
+    if (typeof document !== "undefined") {
+      const sevenDays = 60 * 60 * 24 * 7;
+      const roles = Array.isArray(combinedUser.roles)
+        ? combinedUser.roles.map((r) => String(r))
+        : [];
+      document.cookie = `token=${encodeURIComponent(storedToken)}; Max-Age=${sevenDays}; Path=/`;
+      document.cookie = `roles=${encodeURIComponent(JSON.stringify(roles))}; Max-Age=${sevenDays}; Path=/`;
+    }
     set({ token: storedToken, user: combinedUser, isReady: true });
   },
 }));

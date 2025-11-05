@@ -25,8 +25,7 @@
                 - /placeholder: tu-correo@ejemplo.com
             - generic [ref=e24]:
               - generic [ref=e25]: Contraseña
-              - textbox "Contraseña" [ref=e26]:
-                - /placeholder: ••••••••
+              - textbox "Contraseña" [ref=e26]
             - button "Iniciar sesión" [ref=e27] [cursor=pointer]
             - paragraph [ref=e28]:
               - text: ¿Aún no tienes cuenta?
@@ -48,5 +47,7 @@
             - link "Crea una cuenta" [ref=e40] [cursor=pointer]:
               - /url: /register
           - paragraph [ref=e41]: "Soporte: soporte@bellezatotal.com"
-  - alert [ref=e42]: Iniciar sesion | BellezaTotal
+  - button "Open Next.js Dev Tools" [ref=e47] [cursor=pointer]:
+    - img [ref=e48]
+  - alert [ref=e51]: Iniciar sesion | BellezaTotal
 ```

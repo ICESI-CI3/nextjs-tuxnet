@@ -7,6 +7,13 @@ import { useAuthStore } from "@/store/useAuthStore";
 const publicRoutes = ["/", "/login", "/register"];
 const authRedirectRoutes = ["/", "/login", "/register"];
 
+// Prefijos de rutas protegidas por rol
+const roleProtectedPrefixes: Array<{ prefix: string; role: string }> = [
+  { prefix: "/admin", role: "admin" },
+  { prefix: "/client", role: "client" },
+  { prefix: "/specialist", role: "stylist" },
+];
+
 const getDashboardForRoles = (roles: string[]): string | null => {
   if (roles.includes("admin")) return "/admin";
   if (roles.includes("client")) return "/client";
@@ -43,6 +50,18 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
       if (!isPublicRoute) {
         router.replace("/login");
       }
+      return;
+    }
+
+    // Validar acceso por rol segun el prefijo de la ruta
+    const requirement = roleProtectedPrefixes.find(
+      ({ prefix }) =>
+        router.pathname === prefix || router.pathname.startsWith(`${prefix}/`),
+    );
+
+    if (requirement && !roles.includes(requirement.role)) {
+      const target = getDashboardForRoles(roles) ?? "/";
+      router.replace(target);
       return;
     }
 

@@ -30,7 +30,13 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const data = await authService.login(email, password);
+      const emailTrim = email.trim();
+      const passTrim = password.trim();
+      if (!emailTrim || !passTrim) {
+        setError("Error: correo y contraseña requeridos");
+        return;
+      }
+      const data = await authService.login(emailTrim, passTrim);
       const roles = normalizeRoles(data.roles);
       login(data.token, {
         id: data.user_id,
