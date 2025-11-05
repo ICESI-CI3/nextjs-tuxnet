@@ -42,11 +42,12 @@ export const appointmentService = {
       const error = await res.json().catch(() => ({}));
       throw new Error(error.message ?? "Cita no encontrada");
     }
-
+    console.log(res.json())
     return res.json();
   },
 
   async create(payload: CreateAppointmentPayload): Promise<Appointment> {
+    console.log("Sending request payload:", payload);
     const res = await fetch(`${getApiBaseUrl()}/appointments`, {
       method: "POST",
       headers: {
