@@ -82,7 +82,7 @@ const LoginForm: React.FC = () => {
         <input
           id="password"
           type="password"
-          placeholder="••••••••"
+          placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-lg border border-neutral/30 px-4 py-3 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
