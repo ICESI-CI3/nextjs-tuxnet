@@ -1,0 +1,561 @@
+openapi: 3.0.3
+info:
+  title: BellezaTotal API — Informe de funcionalidades (Frontend)
+  version: "0.1.0"
+  description: |
+    Resumen
+    - Aplicación Next.js con paneles por rol (admin, specialist, client).
+    - Autenticación basada en JWT, autorización por redirecciones y navegación contextual.
+    - Estado global de sesión con Zustand (persistencia en localStorage).
+    - Capa de servicios REST y MSW para mocks en desarrollo.
+
+    Arquitectura (Frontend)
+    - Guard Global: AuthGuard hidrata sesión, protege rutas privadas y redirige por rol.
+    - Layouts: AuthLayout (login/registro) y DashboardLayout (paneles).
+    - Servicios: fetch con base URL configurable (NEXT_PUBLIC_API_URL) y headers Bearer.
+    - Mocks: MSW intercepta en desarrollo cuando NEXT_PUBLIC_USE_MOCKS=true.
+
+    Autenticación
+    - Inicio de sesión (POST /auth/login) con credenciales (email/password).
+    - El backend responde con token (JWT) y datos de usuario (user_id, email, roles, isActive).
+    - El frontend decodifica el token (jwt-decode), normaliza roles (string|array) y persiste token+usuario en localStorage (claves: token, sessionUser).
+    - Cierre de sesión: limpieza de storage y estado.
+
+    Autorización
+    - Redirecciones por rol tras login o acceso a rutas públicas:
+      admin → /admin, client → /client, stylist → /specialist.
+    - Rutas privadas requieren token; sin token se redirige a /login.
+    - Hay util hasRole para checks finos; se recomienda reforzar control por rol en cliente y, sobre todo, en backend (403).
+
+    Gestión del Estado
+    - useAuthStore (Zustand):
+      - Estado: { user, token, isReady }.
+      - Acciones: login(token, userData), logout(), hydrate().
+      - Persistencia en localStorage; reconstruye user combinando payload del JWT con datos extra.
+      - Normaliza roles como array de strings.
+
+    Funcionalidades
+    - Admin:
+      - Tablero con métricas y listados recientes (servicios, citas, usuarios).
+      - Servicios (CRUD): listar, crear, editar, eliminar.
+      - Citas: listar por estado, actualizar estado, ver detalle.
+      - Usuarios: listado y filtro por rol.
+      - Perfil admin.
+    - Cliente:
+      - Catálogo de servicios; detalle + reserva.
+      - Mis reservas: filtrar/actualizar estado (confirmar/cancelar).
+      - Perfil cliente.
+    - Especialista:
+      - Tablero con citas prioritarias y métricas.
+      - Mis citas: filtrar/actualizar estado (marcar atendida/cancelar).
+      - Perfil especialista.
+
+    Mocks (MSW)
+    - Inicializa en cliente cuando NEXT_PUBLIC_USE_MOCKS=true.
+    - Handlers: /auth, /services, /appointments, /users.
+    - En desarrollo intercepta tanto rutas absolutas como relativas; en producción se usa el backend real.
+
+    Errores y feedback
+    - Manejo consistente de isLoading, feedback/error, y skeletons de carga.
+    - Mensajes específicos por operación (crear, actualizar, cancelar).
+
+    Limitaciones y próximos pasos
+    - Endurecer autorización por rol en cliente (guard paramétrico) y servidor (403).
+    - Alinear contrato de roles del backend (preferir siempre array).
+    - Añadir pruebas (Vitest/Playwright) y CI/CD.
+servers:
+  - url: https://nestjs-tuxnet-lrey4b2j6-santiagosantacruz57s-projects.vercel.app
+    description: Producción (NestJS)
+  - url: /
+    description: Desarrollo (MSW intercepta con NEXT_PUBLIC_USE_MOCKS=true)
+tags:
+  - name: Auth
+    description: Autenticación y registro
+  - name: Services
+    description: Catálogo de servicios (CRUD)
+  - name: Appointments
+    description: Gestión de citas
+  - name: Users
+    description: Gestión de usuarios (listado)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Role:
+      type: string
+      description: Rol del usuario
+      enum: [admin, client, stylist]
+    User:
+      type: object
+      required: [id, firstname, email, roles, isActive]
+      properties:
+        id:
+          type: string
+        firstname:
+          type: string
+        email:
+          type: string
+          format: email
+        roles:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/Role'
+            - $ref: '#/components/schemas/Role'
+          description: Puede venir como string o arreglo; el frontend lo normaliza a arreglo
+        isActive:
+          type: boolean
+    Service:
+      type: object
+      required: [id, name, durationMin, price, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          nullable: true
+        durationMin:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+          minimum: 0
+        status:
+          type: string
+          description: Estado del servicio (p. ej. active|inactive)
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+    AppointmentStatus:
+      type: string
+      enum: [pending, confirmed, completed, cancelled]
+    Appointment:
+      type: object
+      required: [id, serviceId, clientId, specialistId, scheduledAt, status]
+      properties:
+        id:
+          type: string
+        serviceId:
+          type: string
+        clientId:
+          type: string
+        specialistId:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/AppointmentStatus'
+        notes:
+          type: string
+          nullable: true
+        service:
+          $ref: '#/components/schemas/Service'
+          nullable: true
+        client:
+          $ref: '#/components/schemas/User'
+          nullable: true
+        specialist:
+          $ref: '#/components/schemas/User'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      required: [token, user_id, email, roles, isActive]
+      properties:
+        token:
+          type: string
+          description: JWT
+        user_id:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+        roles:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/Role'
+            - $ref: '#/components/schemas/Role'
+        isActive:
+          type: boolean
+      example:
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxx.yyy"
+        user_id: "mock-client-1"
+        firstname: "Carla"
+        email: "carla@example.com"
+        roles: ["client"]
+        isActive: true
+    RegisterRequest:
+      type: object
+      required: [firstname, email, password]
+      properties:
+        firstname:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    CreateServiceRequest:
+      type: object
+      required: [name, durationMin, price]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        durationMin:
+          type: integer
+        price:
+          type: number
+        status:
+          type: string
+          default: active
+    UpdateServiceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        durationMin:
+          type: integer
+        price:
+          type: number
+        status:
+          type: string
+    CreateAppointmentRequest:
+      type: object
+      required: [serviceId, scheduledAt]
+      properties:
+        serviceId:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+    UpdateAppointmentRequest:
+      type: object
+      properties:
+        scheduledAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        specialistId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AppointmentStatus'
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      description: Devuelve un JWT y datos básicos del usuario
+      security: []  # sin auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Faltan campos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar usuario
+      security: []  # sin auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Campos obligatorios faltantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email ya registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /services:
+    get:
+      tags: [Services]
+      summary: Listar servicios
+      responses:
+        '200':
+          description: Lista de servicios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+    post:
+      tags: [Services]
+      summary: Crear servicio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceRequest'
+      responses:
+        '201':
+          description: Servicio creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /services/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Services]
+      summary: Obtener servicio por ID
+      responses:
+        '200':
+          description: Servicio encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Services]
+      summary: Actualizar servicio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceRequest'
+      responses:
+        '200':
+          description: Servicio actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Services]
+      summary: Eliminar servicio
+      responses:
+        '200':
+          description: Servicio eliminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /appointments:
+    get:
+      tags: [Appointments]
+      summary: Listar citas
+      responses:
+        '200':
+          description: Lista de citas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+    post:
+      tags: [Appointments]
+      summary: Crear cita
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+      responses:
+        '201':
+          description: Cita creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /appointments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Appointments]
+      summary: Obtener cita por ID
+      responses:
+        '200':
+          description: Cita encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Appointments]
+      summary: Actualizar cita (parcial)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppointmentRequest'
+      responses:
+        '200':
+          description: Cita actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /appointments/{id}/attend:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Appointments]
+      summary: Marcar cita como atendida
+      responses:
+        '200':
+          description: Cita completada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
