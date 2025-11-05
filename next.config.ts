@@ -1,9 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'standalone', // ✅ correct for Vercel
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
-  basePath: '', // ❌ don’t add custom paths unless really needed
-  assetPrefix: '', // ❌ leave empty for Vercel
+  output: 'standalone',
 };
 
-module.exports = nextConfig;
+export default nextConfig;
