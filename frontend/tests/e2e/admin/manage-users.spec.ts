@@ -1,33 +1,68 @@
-// tests/e2e/admin/manage-users.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, Page, Route } from "@playwright/test";
+import { mockAdminSession } from "../utils/session";
 
-test('El admin puede ver lista de usuarios (mock)', async ({ page }) => {
-  // Interceptamos la llamada a la API que devuelve usuarios
-  await page.route('**/users', async (route) => {
-    const mockUsers = [
-      { id: 1, name: 'Ana López', role: 'cliente' },
-      { id: 2, name: 'Juan Pérez', role: 'especialista' },
-      { id: 3, name: 'Laura Gómez', role: 'cliente' },
-    ];
+test.describe("Admin - Gestión de Usuarios", () => {
+  const mockUsers = [
+    {
+      id: "1",
+      firstname: "Laura",
+      email: "laura@test.com",
+      roles: ["client"],
+      isActive: true,
+    },
+    {
+      id: "2",
+      firstname: "Pedro",
+      email: "pedro@test.com",
+      roles: ["stylist"],
+      isActive: false,
+    },
+  ];
 
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(mockUsers),
-    });
+  async function setupMock(page: Page) {
+    await mockAdminSession(page);
+    await page.route("**/users", async (route: Route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockUsers),
+      })
+    );
+  }
+
+  test("✅ muestra correctamente la tabla de usuarios", async ({ page }) => {
+    await setupMock(page);
+    await page.goto("/admin/users");
+
+    await expect(page.locator("text=Gestión de usuarios")).toBeVisible();
+    await expect(page.locator("text=Cliente")).toBeVisible();
+    await expect(page.locator("text=Especialista")).toBeVisible();
+
+    const rows = page.locator("tbody tr");
+    expect(await rows.count()).toBeGreaterThan(0);
   });
 
-  // Navegamos a la página del admin
-  await page.goto('/admin/users');
+  test("✅ puede filtrar usuarios por rol", async ({ page }) => {
+    await setupMock(page);
+    await page.goto("/admin/users");
 
-  // Verificamos elementos del panel
-  await expect(page.locator('text=Clientes')).toBeVisible();
-  await page.click('text=Especialistas');
+    await page.getByRole("button", { name: "Especialista" }).click();
+    const rows = page.locator("tbody tr");
+    expect(await rows.count()).toBe(1);
+    await expect(page.locator("text=Pedro")).toBeVisible();
+  });
 
-  // Contamos las tarjetas renderizadas
-  const userCards = page.locator('.UserCard');
-  const count = await userCards.count();
+  test("❌ muestra mensaje de error si falla el backend", async ({ page }) => {
+    await mockAdminSession(page);
+    await page.route("**/users", async (route: Route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "Error al obtener los usuarios" }),
+      })
+    );
 
-  // Verificamos que se hayan mostrado los usuarios del mock
-  expect(count).toBeGreaterThan(0);
+    await page.goto("/admin/users");
+    await expect(page.locator("text=Error al obtener los usuarios")).toBeVisible();
+  });
 });

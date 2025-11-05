@@ -1,40 +1,43 @@
-// tests/e2e/view-profile.spec.ts
-import { test, expect } from '@playwright/test';
-import { loginAs } from '../utils/helpers';
+import { test, expect } from "@playwright/test";
 
-test.describe('Ver perfil por rol', () => {
-  test('Cliente: ver perfil en /client/profile', async ({ page }) => {
-    await loginAs(page, 'cliente@test.com', '12345'); // usa credenciales reales de prueba
-    await page.goto('/client/profile');
+const mockClient = {
+  token: "fake-token",
+  user_id: "456",
+  firstname: "Cliente",
+  email: "client@test.com",
+  roles: ["client"],
+  isActive: true,
+};
 
-    // Elementos esperados en perfil de cliente (ajusta selectores)
-    await expect(page.locator('text=Mi Perfil, Perfil')).toBeVisible();
-    await expect(page.locator('text=Correo, Email, Correo electrónico')).toBeVisible().catch(()=>{});
-    const name = page.locator('text=Nombre, Nombre completo, .user-name, [data-test="user-name"]');
-    expect(await name.count()).toBeGreaterThanOrEqual(0); // al menos no lanzar error
+test.describe("Client - View Profile", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/auth/login", async (route) => {
+      const body = await route.request().postDataJSON();
+      if (body.email === "client@test.com" && body.password === "12345") {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(mockClient),
+        });
+      } else {
+        return route.fulfill({
+          status: 401,
+          contentType: "application/json",
+          body: JSON.stringify({ message: "Credenciales inválidas" }),
+        });
+      }
+    });
+
+    await page.goto("/login");
+    await page.fill("#email", "client@test.com");
+    await page.fill("#password", "12345");
+    await page.click('button[type="submit"]');
   });
 
-  test('Admin: ver perfil en /admin/profile', async ({ page }) => {
-    await loginAs(page, 'admin@test.com', '12345');
-    await page.goto('/admin/profile');
-
-    await expect(page.locator('text=Perfil, Mi Perfil, Administrador')).toBeVisible();
-    // Comprobar que aparece el email del admin
-    const emailLocator = page.locator('text=@, text=admin@test.com, [data-test="user-email"]');
-    // si es visible, assert true; si no existe, el test no falla por el catch opcional
-    if (await emailLocator.count() > 0) {
-      await expect(emailLocator.first()).toBeVisible();
-    }
-  });
-
-  test('Especialista: ver perfil en /specialist/profile', async ({ page }) => {
-    await loginAs(page, 'stylist@test.com', '12345');
-    await page.goto('/specialist/profile');
-
-    await expect(page.locator('text=Perfil, Mi Perfil, Especialista')).toBeVisible();
-    // Comprobar que el especialista vea sus campos (ej: servicios, horario)
-    const specialty = page.locator('text=Servicios, text=Especialidad, [data-test="specialty"]');
-    // no todos los perfiles muestran el mismo contenido; solo comprobamos que la página carga
-    expect(await specialty.count()).toBeGreaterThanOrEqual(0);
+  test("✅ muestra correctamente la información del perfil", async ({ page }) => {
+    await page.goto("/client/profile");
+    await expect(page.getByRole("heading", { name: /mi perfil/i })).toBeVisible();
+    await expect(page.getByText(/correo:/i)).toBeVisible();
+    await expect(page.getByText(/cliente/i)).toBeVisible();
   });
 });

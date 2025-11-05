@@ -1,37 +1,53 @@
-// tests/e2e/view-services.spec.ts
-import { test, expect } from '@playwright/test';
-import { loginAs } from '../utils/helpers';
+import { test, expect, Page, Route } from "@playwright/test";
+import { mockAdminSession } from "../utils/session";
 
-test.describe('Ver servicios (cliente / admin / especialista)', () => {
-  test('Cliente: puede ver la lista de servicios en /client', async ({ page }) => {
-    // Si tu app requiere login para /client, descomenta la línea siguiente
-    await loginAs(page, 'cliente@test.com', '12345');
+test.describe("Admin - Gestión de Servicios", () => {
+  const mockServices = [
+    { id: "1", name: "Corte", price: 20000, durationMin: 30 },
+    { id: "2", name: "Manicure", price: 30000, durationMin: 45 },
+  ];
 
-    await page.goto('/client');
-    await expect(page.locator('text=Servicios, Servicios Disponibles, Nuestros Servicios')).toBeVisible({ timeout: 5000 }).catch(()=>{ /* fallback */ });
+  async function setupMock(page: Page) {
+    await mockAdminSession(page);
+    await page.route("**/services", async (route: Route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockServices),
+      })
+    );
+  }
 
-    const services = page.locator('.ServiceCard, article.ServiceCard, [data-test="service-card"]');
-    const count = await services.count();
-    expect(count).toBeGreaterThan(0);
+  test("✅ muestra correctamente la tabla de servicios", async ({ page }) => {
+    await setupMock(page);
+    await page.goto("/admin/services");
+
+    await expect(page.locator("text=Servicios del salon")).toBeVisible();
+    const rows = page.locator("tbody tr");
+    expect(await rows.count()).toBeGreaterThan(0);
   });
 
-  test('Admin: puede ver servicios en /admin', async ({ page }) => {
-    await loginAs(page, 'admin@test.com', '12345');
-    await page.goto('/admin');
-    await expect(page.locator('text=Servicios')).toBeVisible();
+  test("✅ puede eliminar un servicio con confirmación", async ({ page }) => {
+    await setupMock(page);
+    await page.goto("/admin/services");
 
-    const services = page.locator('.ServiceCard, article.ServiceCard, [data-test="service-card"]');
-    const count = await services.count();
-    expect(count).toBeGreaterThan(0);
+    // simular confirmación del diálogo
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.click("text=Eliminar");
+    await expect(page.locator("text=Servicio eliminado correctamente")).toBeVisible();
   });
 
-  test('Especialista: puede ver servicios en /specialist', async ({ page }) => {
-    await loginAs(page, 'stylist@test.com', '12345');
-    await page.goto('/specialist');
-    await expect(page.locator('text=Servicios, Servicios ofrecidos')).toBeVisible();
+  test("❌ muestra mensaje de error si falla el backend", async ({ page }) => {
+    await mockAdminSession(page);
+    await page.route("**/services", async (route: Route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "Error al cargar los servicios" }),
+      })
+    );
 
-    const services = page.locator('.ServiceCard, article.ServiceCard, [data-test="service-card"]');
-    const count = await services.count();
-    expect(count).toBeGreaterThan(0);
+    await page.goto("/admin/services");
+    await expect(page.locator("text=Error al cargar los servicios")).toBeVisible();
   });
 });

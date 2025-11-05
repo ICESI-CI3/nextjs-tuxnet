@@ -1,0 +1,65 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - link "BT BellezaTotal Panel de control" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: BT
+        - generic [ref=e8]:
+          - generic [ref=e9]: BellezaTotal
+          - generic [ref=e10]: Panel de control
+      - navigation [ref=e11]:
+        - link "Servicios" [ref=e12] [cursor=pointer]:
+          - /url: /client
+        - link "Mis reservas" [ref=e13] [cursor=pointer]:
+          - /url: /client/appointment
+        - link "Mi perfil" [ref=e14] [cursor=pointer]:
+          - /url: /client/profile
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - paragraph [ref=e17]: Cliente
+          - paragraph [ref=e18]: client
+        - button "Cerrar sesión" [ref=e19] [cursor=pointer]
+    - main [ref=e20]:
+      - generic [ref=e22]:
+        - heading "Mi perfil" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Gestiona tus datos de contacto, preferencias y roles asociados a tu cuenta BellezaTotal.
+      - generic [ref=e25]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - generic [ref=e30]: C
+              - generic [ref=e31]:
+                - heading "Cliente" [level=2] [ref=e32]
+                - paragraph [ref=e33]: client@test.com
+            - generic [ref=e34]:
+              - button "Editar perfil" [ref=e35] [cursor=pointer]
+              - button "Configurar preferencias" [ref=e36] [cursor=pointer]
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - term [ref=e39]: Membresía
+              - definition [ref=e40]: Cliente BellezaTotal
+            - generic [ref=e41]:
+              - term [ref=e42]: Teléfono
+              - definition [ref=e43]: +57 300 000 0000
+            - generic [ref=e44]:
+              - term [ref=e45]: Preferencias
+              - definition [ref=e46]: Coloración, spa facial, manicure spa
+            - generic [ref=e47]:
+              - term [ref=e48]: Roles asociados
+              - definition [ref=e49]:
+                - generic [ref=e50]: client
+        - complementary [ref=e51]:
+          - generic [ref=e52]:
+            - heading "Recomendaciones" [level=2] [ref=e53]
+            - list [ref=e54]:
+              - listitem [ref=e55]: Actualiza tus datos de contacto para recibir notificaciones.
+              - listitem [ref=e56]: Comparte tus preferencias para personalizar recomendaciones.
+              - listitem [ref=e57]: Configura recordatorios automáticos según tu frecuencia ideal.
+          - generic [ref=e58]:
+            - heading "Historial" [level=3] [ref=e59]
+            - paragraph [ref=e60]: Próximamente podrás descargar tu historial de servicios con notas y recomendaciones del equipo BellezaTotal.
+  - alert [ref=e61]
+```
