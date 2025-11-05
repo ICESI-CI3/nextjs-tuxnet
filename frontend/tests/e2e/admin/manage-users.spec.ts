@@ -1,33 +1,25 @@
-// tests/e2e/admin/manage-users.spec.ts
 import { test, expect } from '@playwright/test';
 
-test('El admin puede ver lista de usuarios (mock)', async ({ page }) => {
-  // Interceptamos la llamada a la API que devuelve usuarios
-  await page.route('**/users', async (route) => {
-    const mockUsers = [
-      { id: 1, name: 'Ana López', role: 'cliente' },
-      { id: 2, name: 'Juan Pérez', role: 'especialista' },
-      { id: 3, name: 'Laura Gómez', role: 'cliente' },
-    ];
+test.describe('Admin - Gestión de usuarios', () => {
 
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(mockUsers),
-    });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+    await page.locator('input[name="email"]').fill('admin@test.com');
+    await page.locator('input[name="password"]').fill('admin123');
+    await page.locator('button:has-text("Iniciar sesión")').click();
+    await expect(page.locator('text=Panel administrativo')).toBeVisible();
   });
 
-  // Navegamos a la página del admin
-  await page.goto('/admin/users');
+  test('Visualiza tabla de usuarios', async ({ page }) => {
+    await page.goto('/admin/users');
+    await expect(page.locator('table')).toBeVisible();
+  });
 
-  // Verificamos elementos del panel
-  await expect(page.locator('text=Clientes')).toBeVisible();
-  await page.click('text=Especialistas');
+  test('Filtra usuarios por rol', async ({ page }) => {
+    await page.goto('/admin/users');
+    const roleSelect = page.locator('select[name="role"], select[aria-label*="rol"]');
+    await roleSelect.selectOption('cliente');
+    await expect(page.locator('table')).toContainText('cliente');
+  });
 
-  // Contamos las tarjetas renderizadas
-  const userCards = page.locator('.UserCard');
-  const count = await userCards.count();
-
-  // Verificamos que se hayan mostrado los usuarios del mock
-  expect(count).toBeGreaterThan(0);
 });

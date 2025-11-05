@@ -1,0 +1,53 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - link "BellezaTotal" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]: BellezaTotal
+        - paragraph [ref=e9]: Agenda servicios de belleza, administra especialistas y mantén el control de tu salón desde una sola plataforma.
+      - generic [ref=e10]:
+        - img "BellezaTotal" [ref=e11]
+        - paragraph [ref=e12]: Facultad Barberi · Computación en Internet III
+    - main [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - heading "Bienvenida de nuevo" [level=1] [ref=e16]
+          - paragraph [ref=e17]: Accede al panel para gestionar servicios, citas y clientes.
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: Correo electrónico
+              - textbox "Correo electrónico" [ref=e23]:
+                - /placeholder: tu-correo@ejemplo.com
+            - generic [ref=e24]:
+              - generic [ref=e25]: Contraseña
+              - textbox "Contraseña" [ref=e26]
+            - button "Iniciar sesión" [ref=e27] [cursor=pointer]
+            - paragraph [ref=e28]:
+              - text: ¿Aún no tienes cuenta?
+              - link "Crea una ahora" [ref=e29] [cursor=pointer]:
+                - /url: /register
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - generic [ref=e32]: "1"
+              - text: Gestiona servicios y productos desde un solo lugar.
+            - listitem [ref=e33]:
+              - generic [ref=e34]: "2"
+              - text: Agenda y confirma citas en cuestion de segundos.
+            - listitem [ref=e35]:
+              - generic [ref=e36]: "3"
+              - text: Manten informados a tus clientes con notificaciones.
+        - generic [ref=e38]:
+          - paragraph [ref=e39]:
+            - text: Eres nuevo en BellezaTotal?
+            - link "Crea una cuenta" [ref=e40] [cursor=pointer]:
+              - /url: /register
+          - paragraph [ref=e41]: "Soporte: soporte@bellezatotal.com"
+  - button "Open Next.js Dev Tools" [ref=e47] [cursor=pointer]:
+    - img [ref=e48]
+  - alert [ref=e51]
+```
